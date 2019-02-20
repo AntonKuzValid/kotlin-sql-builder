@@ -7,23 +7,25 @@ class MainTest {
 
     @Test
     fun testSimpleSelect() {
-        val queryBuilder = Select(
+        val queryBuilder = SelectBuilder(
             TestEntity::id,
             TestEntity::name,
             distinct = true
-        ) from TestEntity::class where (group(TestEntity::id.gt(`?`) and TestEntity::name.gt(`?`))
-                or TestEntity::id.lt(`?`))
+        ) from TestEntity::class where {
+            TestEntity::id.gt(`?`) and TestEntity::name.gt(`?`)
+        } or TestEntity::id.lt(`?`) groupBy TestEntity::name having {
+            TestEntity::name.gt(`?`)
+        } orderBy (TestEntity::name)
 
-        Assert.assertTrue(queryBuilder.sql=="SELECT DISTINCT (id, name) FROM TestEntity WHERE (id > ?) and")
+        Assert.assertTrue(queryBuilder.sql == "SELECT DISTINCT (id, name) FROM TestEntity WHERE (id > ?) and")
     }
 
     @Test
-    fun testSimpleSelect1() {
-        val queryBuilder = Select(
-            TestEntity::class
-        ) from TestEntity::class where (group(TestEntity::id.gt(`?`) and TestEntity::name.gt(`?`))
-                or TestEntity::id.lt(`?`))
+    fun testDiffSelect() {
+        val groupBuilder = select(TestEntity::id, TestEntity::male) from {
+            select(TestEntity::name) from TestEntity::class
+        } groupBy TestEntity::male
 
-        Assert.assertTrue(queryBuilder.sql=="SELECT DISTINCT (id, name) FROM TestEntity WHERE (id > ?) and")
+        print(groupBuilder.sql)
     }
 }

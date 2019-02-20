@@ -4,16 +4,14 @@ import javax.persistence.Column
 import javax.persistence.Table
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
 
 const val `?` = "?"
 
 open class QueryBuilder(var sql: String = "") {
 
-    infix fun where(builder: QueryBuilder): QueryBuilder {
-        sql += " WHERE ${builder.sql}"
-        return this
-    }
+    constructor(builder: QueryBuilder) : this(builder.sql)
 }
 
 
@@ -27,4 +25,5 @@ fun <T> KProperty<T>.le(param: String) = Condition("${this.name} <= $param")
 fun <T> KProperty<T>.column() = this.findAnnotation<Column>()?.name ?: this.name
 fun <T : Any> KClass<T>.table() = this.findAnnotation<Table>()?.let { "${it.schema}.${it.name}" } ?: this.simpleName
 
-fun group(condition: Condition) = Condition("(${condition.sql})")
+fun <T : Any> select(vararg columns: KProperty1<T, *>) = SelectBuilder(*columns, distinct = false)
+fun <T : Any> selectDistinct(vararg columns: KProperty1<T, *>) = SelectBuilder(*columns, distinct = true)

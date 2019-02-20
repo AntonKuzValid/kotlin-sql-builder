@@ -1,7 +1,7 @@
 package ru.antonioplay
 
 
-class Condition(sql: String) : QueryBuilder(sql) {
+class Condition(var sql: String = "") {
 
     infix fun and(condition: Condition): Condition {
         sql += " and ${condition.sql}"
